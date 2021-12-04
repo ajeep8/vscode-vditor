@@ -1,0 +1,182 @@
+{
+  "name": "vscode-vditor",
+  "displayName": "vscode-vditor",
+  "description": "Vditor 是一款浏览器端的 Markdown 编辑器，支持所见即所得、即时渲染（类似 Typora）和分屏预览模式。",
+  "keywords": [
+    "markdown",
+    "image",
+    "paste",
+    "copy"
+  ],
+  "version": "0.0.1",
+  "publisher": "zhepama",
+  "author": {
+    "name": "zhepama",
+    "email": "zhepama@gmail.com"
+  },
+  "license": "(MIT)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhemima/vscode-vditor.git"
+  },
+  "homepage": "https://github.com/zhemima/vscode-vditor",
+  "bugs": {
+    "url": "https://github.com/zhemima/vscode-vditor/issues"
+  },
+  "engines": {
+    "vscode": "^1.62.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "assets/icon.png",
+  "activationEvents": [
+    "onCustomEditor:vscode-vdito.vdito",
+    "onCommand:vscode-vditor.open",
+    "onCommand:vscode-vditor.paste"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Vditor Configuration",
+      "properties": {
+        "Vditor.imgSavePath": {
+          "type": "string",
+          "default": "./",
+          "description": "The destination to save image file."
+        },
+        "Vditor.enableImgTag": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/Disable using img tag with width and height for pasting image."
+        },
+        "Vditor.encodePath": {
+          "type": "string",
+          "enum": [
+            "none",
+            "encodeURI",
+            "encodeSpaceOnly"
+          ],
+          "default": "encodeSpaceOnly",
+          "description": "Encode path to URL-encode format. Options: none, encodeURI, encodeSpaceOnly"
+        },
+        "Vditor.rules": {
+          "type": "array",
+          "default": [
+            {
+              "regex": "^(?:https?://)?(?:(?:(?:www\\.?)?youtube\\.com(?:/(?:(?:watch\\?.*?v=([^&\\s]+).*)|))?))",
+              "options": "g",
+              "replace": "[![](https://img.youtube.com/vi/$1/0.jpg)](https://www.youtube.com/watch?v=$1)"
+            },
+            {
+              "regex": "^(https?://.*)",
+              "options": "ig",
+              "replace": "[]($1)"
+            }
+          ],
+          "description": "Rules for markdown paste."
+        }
+      }
+    },
+    "customEditors": [
+      {
+        "viewType": "vscode-vdito.vdito",
+        "displayName": "Vdito",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "commands": [
+      {
+        "command": "vscode-vditor.open",
+        "title": "Open Use Vdito",
+        "icon": {
+          "light": "assets/icon.png",
+          "dark": "assets/icon.png"
+        }
+      },
+      {
+        "command": "vscode-vditor.paste",
+        "title": "Vdito Paste"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vscode-vditor.paste",
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v",
+        "when": "editorTextFocus && resourceLangId == markdown"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "vscode-vditor.open",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "vscode-vditor.paste",
+          "when": "editorLangId == markdown"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceLangId == markdown",
+          "command": "vscode-vditor.open",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "resourceLangId == markdown && activeEditor == workbench.editors.files.textFileEditor",
+          "command": "vscode-vditor.open",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "vscode-vditor.paste",
+          "group": "markdown"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.4",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "14.x",
+    "@types/shelljs": "^0.8.9",
+    "@types/vscode": "^1.62.0",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "@vscode/test-electron": "^1.6.2",
+    "eslint": "^8.1.0",
+    "glob": "^7.1.7",
+    "mocha": "^9.1.3",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.4.4",
+    "webpack": "^5.52.1",
+    "webpack-cli": "^4.8.0"
+  },
+  "dependencies": {
+    "moment": "^2.29.1",
+    "node-html-markdown": "^1.1.3",
+    "shelljs": "^0.8.4"
+  }
+}
