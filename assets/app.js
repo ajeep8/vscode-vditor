@@ -156,7 +156,7 @@
         global.vditor = new Vditor('vditor', {
             lang: language,
             width: '100%',
-            height: '100%',
+            height: window.innerHeight + 100,
             minHeight: '100%',
             mode: 'ir',
             toolbar: toolbar,
