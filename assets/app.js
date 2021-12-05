@@ -11,24 +11,17 @@
 
     const langs = {
         en_US: {
-            save: 'Save',
             copyMarkdown: 'Copy Markdown',
             copyHtml: 'Copy HTML',
-            resetConfig: 'Reset config',
-            resetConfirm: "Are you sure to reset the markdown-editor's config?",
         },
         ja_JP: {
-            save: '保存する',
         },
         ko_KR: {
-            save: '저장',
         },
         zh_CN: {
-            save: '保存',
             copyMarkdown: '复制 Markdown',
             copyHtml: '复制 HTML',
-            resetConfig: '重置配置',
-            resetConfirm: '确定要重置 markdown-editor 的配置么?',
+            sourceCode: "查看源代码"
         },
     };
 
@@ -73,6 +66,16 @@
         'undo',
         'redo',
         '|',
+        {
+            name: 'sourceCode',
+            tip: t('sourceCode'),
+            icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"></path></svg>',
+            click() {
+                vscode.postMessage({
+                    type: 'sourceCode'
+                })
+            },
+        },
         { name: 'edit-mode', tipPosition: 'e', },
         {
             name: 'more',
@@ -90,12 +93,12 @@
                         try {
                             await navigator.clipboard.writeText(global.vditor.getValue());
                             vscode.postMessage({
-                                command: 'info',
+                                type: 'info',
                                 content: 'Copy Markdown successfully!',
                             });
                         } catch (error) {
                             vscode.postMessage({
-                                command: 'error',
+                                type: 'error',
                                 content: `Copy Markdown failed! ${error.message}`,
                             });
                         }
@@ -108,12 +111,12 @@
                         try {
                             await navigator.clipboard.writeText(global.vditor.getHTML());
                             vscode.postMessage({
-                                command: 'info',
+                                type: 'info',
                                 content: 'Copy HTML successfully!',
                             });
                         } catch (error) {
                             vscode.postMessage({
-                                command: 'error',
+                                type: 'error',
                                 content: `Copy HTML failed! ${error.message}`,
                             });
                         }
@@ -127,8 +130,22 @@
     ];
 
 
+    // 切换 content-theme 时自动修改 vditor theme
+    function fixDarkTheme() {
+        let $ct = document.querySelector('[data-type="content-theme"]')
+        $ct.nextElementSibling.addEventListener('click', (e) => {
 
-
+            //@ts-ignore
+            if ((e.target).tagName !== 'BUTTON') return;
+            //@ts-ignore
+            let type = (e.target).dataset.type;
+            if (type === 'dark') {
+                global.vditor.setTheme("dark");
+            } else {
+                global.vditor.setTheme('classic');
+            }
+        });
+    }
 
 
 
@@ -151,21 +168,65 @@
         };
     }
 
+    //修复链接不能点击打开
+    function fixLinkClick() {
+        const openLink = (url) => {
+            vscode.postMessage({ type: 'link', href: url });
+        };
+        document.addEventListener('click', e => {
+            //@ts-ignore
+            if (e.target.tagName === 'A') {
+                //@ts-ignore
+                openLink(e.target.href);
+            }
+        });
+        window.open = (url) => {
+            openLink(url);
+            return window;
+        }
+    }
+
+    //保存一些简单的配置
+    function saveVditorOptions() {
+        let x = document.querySelectorAll('.vditor-toolbar button[data-mode], .vditor-toolbar button[data-type]')
+        var i;
+        for (i = 0; i < x.length; i++) {
+            x[i].addEventListener('click', e => {
+                //间隔一下因为是先设置然后再获取..否则只是获取的是当前的配置
+                setTimeout(() => {
+                    let vditorOptions = {
+                        theme: global.vditor.vditor.options.theme,
+                        mode: global.vditor.vditor.currentMode,
+                        previewtheme: global.vditor.vditor.options.preview.theme.current
+                    };
+                    vscode.postMessage({
+                        type: 'config',
+                        options: vditorOptions,
+                    });
+                }, 300);
+
+            });
+        }
+
+    }
+
     const initVditor = (language) => {
+
         // @ts-ignore
         global.vditor = new Vditor('vditor', {
             lang: language,
             width: '100%',
             height: window.innerHeight + 100,
             minHeight: '100%',
-            mode: 'ir',
+            theme: global.vditorOptions.theme || 'classic',
+            mode: global.vditorOptions.mode || 'ir',
             toolbar: toolbar,
             toolbarConfig: {
                 pin: true,
             },
             preview: {
                 theme: {
-                    current: 'light',
+                    current: global.vditorOptions.previewtheme || 'light',
                 },
                 markdown: {
                     toc: true,
@@ -191,13 +252,16 @@
                     console.log(files);
                     vscode.postMessage({
                         type: 'upload',
-                        files: files.map((f)=>{return f.path;}),
+                        files: files.map((f) => { return f.path; }),
                     });
                     return null;
                 },
             },
-            after() {   
+            after() {
+                fixDarkTheme();
                 fixCut();
+                fixLinkClick();
+                saveVditorOptions();
                 vscode.postMessage({ type: 'after' });
             },
             input(/** @type {string} */ value) {
@@ -227,6 +291,19 @@
         initVditor(language);
     };
 
+    document.addEventListener('keydown', (event) => {
+        const keyName = event.key;
+
+        if (keyName === 'Control' || keyName === 'Alt') {
+            // do not alert when only Control key is pressed.
+            return;
+        }
+
+        if (event.ctrlKey && event.altKey && keyName === "v") {
+            vscode.postMessage({ type: 'paste' });
+        }
+    }, false);
+
     // Webviews are normally torn down when not visible and re-created when they become visible again.
     // State lets us save information across these re-loads
     const state = vscode.getState();
@@ -243,6 +320,7 @@
 
                 // Update our webview's content
                 updateContent(text);
+             
 
                 // Then persist state information.
                 // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
@@ -255,6 +333,9 @@
                     uploaded(f);
                 });
 
+                break;
+            case "pasted":
+                global.vditor.insertValue(message.content);
                 break;
         }
     });

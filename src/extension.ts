@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('vscode-vditor.paste', () => {
-		let instance = ImageSaver.getInstance();
+		let instance = ImageSaver.getInstance(); 
 		instance.pasteText();
 	}));
 
