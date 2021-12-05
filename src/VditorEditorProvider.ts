@@ -168,7 +168,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				<div id="vditor"></div>
 				<script>
 				(function (global) {
-					global.vditorOptions = ${JSON.stringify(options)};
+					global.vditorOptions = ${JSON.stringify(options)} || {};
 				}).call(this, window);
 				</script>
 				<script src="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.min.js"></script>
