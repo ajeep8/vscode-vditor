@@ -54,14 +54,8 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		// Remember that a single text document can also be shared between multiple custom
 		// editors (this happens for example when you split a custom editor)
 
-		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-
-			if(this.triggerWriteText == true)
-			{ 		
-				this.triggerWriteText = false;
-				return;
-			}
-			if (e.document.uri.toString() === document.uri.toString()) {
+		const changeDocumentSubscription = vscode.workspace.onDidSaveTextDocument(e => {
+			if (e.uri.toString() === document.uri.toString()) {
 				updateWebview();
 			}
 		});
@@ -183,15 +177,12 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 			</html>`;
 	}
 
-	private triggerWriteText:boolean = false;
 	private textEditTimer: NodeJS.Timeout | undefined;
 	private async onInput(document: vscode.TextDocument, content: string) {
 		this.textEditTimer && clearTimeout(this.textEditTimer);
 		this.textEditTimer = setTimeout(() => {
-			this.triggerWriteText = true;
 			this.updateTextDocument(document, content); 
 		}, 500);
-		//500是为了避免多次赋值.以及因为每次赋值都会触发onDidChangeTextDocument,如果在短时间内保存triggerWriteText很可能混乱
 	}
 
 	private onSelect(document: vscode.TextDocument, content: any) {
