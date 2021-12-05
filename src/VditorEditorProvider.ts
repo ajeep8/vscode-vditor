@@ -54,8 +54,8 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		// Remember that a single text document can also be shared between multiple custom
 		// editors (this happens for example when you split a custom editor)
 
-		const changeDocumentSubscription = vscode.workspace.onDidSaveTextDocument(e => {
-			if (e.uri.toString() === document.uri.toString()) {
+		const changeDocumentSubscription = vscode.workspace.onWillSaveTextDocument(e => {
+			if (e.document.uri.toString() === document.uri.toString()) {
 				updateWebview();
 			}
 		});
@@ -179,10 +179,10 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 
 	private textEditTimer: NodeJS.Timeout | undefined;
 	private async onInput(document: vscode.TextDocument, content: string) {
-		this.textEditTimer && clearTimeout(this.textEditTimer);
-		this.textEditTimer = setTimeout(() => {
+		// this.textEditTimer && clearTimeout(this.textEditTimer);
+		// this.textEditTimer = setTimeout(() => {
 			this.updateTextDocument(document, content); 
-		}, 500);
+		// }, 500);
 	}
 
 	private onSelect(document: vscode.TextDocument, content: any) {
