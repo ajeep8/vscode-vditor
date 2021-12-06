@@ -19,6 +19,7 @@
         ko_KR: {
         },
         zh_CN: {
+            save: '保存',
             copyMarkdown: '复制 Markdown',
             copyHtml: '复制 HTML',
             sourceCode: "查看源代码"
@@ -210,6 +211,8 @@
 
     }
 
+    var  textEditTimer;
+
     const initVditor = (language) => {
 
         // @ts-ignore
@@ -265,7 +268,11 @@
                 vscode.postMessage({ type: 'after' });
             },
             input(/** @type {string} */ value) {
-                vscode.postMessage({ type: 'input', content: value });
+                //避免更新过较频繁或更新代价较高
+                textEditTimer && clearTimeout(textEditTimer);
+                textEditTimer = setTimeout(() => { 
+                    vscode.postMessage({ type: 'input', content: value });
+                }, 300); 
             },
             focus(/** @type {string} */ value) {
                 vscode.postMessage({ type: 'focus', content: value });
@@ -320,7 +327,7 @@
 
                 // Update our webview's content
                 updateContent(text);
-             
+
 
                 // Then persist state information.
                 // This state is returned in the call to `vscode.getState` below when a webview is reloaded.

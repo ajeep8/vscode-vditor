@@ -21,7 +21,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	) {
 
 		context.globalState.setKeysForSync([VditorEditorProvider.KeyVditorOptions]);
-	 }
+	}
 
 	/**
 	 * Called when our custom editor is opened.
@@ -53,17 +53,32 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		// 
 		// Remember that a single text document can also be shared between multiple custom
 		// editors (this happens for example when you split a custom editor)
-
-		const changeDocumentSubscription = vscode.workspace.onWillSaveTextDocument(e => {
+		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
+
+				if (e.contentChanges.length == 0) {
+					//没有内容改变返回
+					return;
+				}
+				if (this.saveing === true) {
+					//如果是保存中,且有内容改变
+					this.saveing = false;
+					return;
+				}
 				updateWebview();
 			}
 		});
 
+		const saveDocumentSubscription = vscode.workspace.onDidSaveTextDocument(e => {
+			if (e.uri.toString() === document.uri.toString()) {
+				//暂时没什么需要
+			}
+		});
 
 		// Make sure we get rid of the listener when our editor is closed.
 		webviewPanel.onDidDispose(() => {
 			changeDocumentSubscription.dispose();
+			saveDocumentSubscription.dispose();
 		});
 
 		// Receive message from the webview.
@@ -72,31 +87,9 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				case 'after':
 					this.onAfter(document);
 					return;
-				case 'sourceCode':
-					{
-						vscode.commands.executeCommand(
-							'vscode.openWith',
-							document.uri,
-							"default",
-							vscode.ViewColumn.Beside,
-						);
-					}
-					return;
-				case 'link':
-					{
-						let url = e.href
-						if (!/^http/.test(url)) {
-							url = path.resolve(document.uri.fsPath, '..', url)
-						}
-						vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(url))
-					}
-					return;
-				case "config":
-					{
-						this.context.globalState.update(VditorEditorProvider.KeyVditorOptions, e.options)
-					}
-					return;
 				case "save":
+					this.onSave(document, e.content);
+					return;
 				case 'input':
 					this.onInput(document, e.content);
 					return;
@@ -121,7 +114,25 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				case 'paste':
 					this.onPaste(webviewPanel, document);
 					return;
-
+				case 'sourceCode':
+					{
+						vscode.commands.executeCommand('vscode.openWith', document.uri, "default", vscode.ViewColumn.Beside);
+					}
+					return;
+				case 'link':
+					{
+						let url = e.href
+						if (!/^http/.test(url)) {
+							url = path.resolve(document.uri.fsPath, '..', url)
+						}
+						vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(url))
+					}
+					return;
+				case "config":
+					{
+						this.context.globalState.update(VditorEditorProvider.KeyVditorOptions, e.options)
+					}
+					return;
 			}
 		});
 
@@ -147,7 +158,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		) + '/';
 
 
-		var options =  this.context.globalState.get(VditorEditorProvider.KeyVditorOptions);
+		var options = this.context.globalState.get(VditorEditorProvider.KeyVditorOptions);
 
 
 		return /* html */`
@@ -177,12 +188,14 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 			</html>`;
 	}
 
-	private textEditTimer: NodeJS.Timeout | undefined;
-	private async onInput(document: vscode.TextDocument, content: string) {
-		// this.textEditTimer && clearTimeout(this.textEditTimer);
-		// this.textEditTimer = setTimeout(() => {
-			this.updateTextDocument(document, content); 
-		// }, 500);
+	private saveing: boolean = false;
+	private onSave(document: vscode.TextDocument, content: string) {
+		this.saveing = true;
+		this.updateTextDocument(document, content);
+	}
+
+	private onInput(document: vscode.TextDocument, content: string) {
+		this.onSave(document, content);
 	}
 
 	private onSelect(document: vscode.TextDocument, content: any) {
@@ -209,7 +222,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	private onUpload(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument, files: any[]) {
 		var imageSaver = ImageSaver.getInstance();
 		var result = files.map((f: any) => {
-			return imageSaver.copyFile(document,f);
+			return imageSaver.copyFile(document, f);
 		});
 		webviewPanel.webview.postMessage({
 			type: 'uploaded',
@@ -219,7 +232,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 
 	private onPaste(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument) {
 		var imageSaver = ImageSaver.getInstance();
-		imageSaver.pasteTextStr(document,(data)=>{
+		imageSaver.pasteTextStr(document, (data) => {
 			webviewPanel.webview.postMessage({
 				type: 'pasted',
 				content: data,
