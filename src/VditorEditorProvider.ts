@@ -84,8 +84,8 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		// Receive message from the webview.
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.type) {
-				case 'after':
-					this.onAfter(document);
+				case 'ready':
+					this.onReady(document);
 					return;
 				case "save":
 					this.onSave(document, e.content);
@@ -215,7 +215,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	private onFocus(document: vscode.TextDocument, content: any) {
 
 	}
-	private onAfter(document: vscode.TextDocument) {
+	private onReady(document: vscode.TextDocument) {
 
 	}
 

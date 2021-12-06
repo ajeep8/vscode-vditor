@@ -265,7 +265,7 @@
                 fixCut();
                 fixLinkClick();
                 saveVditorOptions();
-                vscode.postMessage({ type: 'after' });
+                vscode.postMessage({ type: 'ready' });
             },
             input(/** @type {string} */ value) {
                 //避免更新过较频繁或更新代价较高
