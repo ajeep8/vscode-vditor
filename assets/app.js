@@ -20,6 +20,7 @@
         },
         zh_CN: {
             save: '保存',
+            refresh: "重载",
             copyMarkdown: '复制 Markdown',
             copyHtml: '复制 HTML',
             sourceCode: "查看源代码"
@@ -39,38 +40,49 @@
     }
 
 
-
+    //https://icons.getbootstrap.com/
     const toolbar = [
-        'emoji',
-        'headings',
-        'bold',
-        'italic',
-        'strike',
-        'link',
+        { name: 'emoji', tipPosition: 'e' },
+        { name: 'headings', tipPosition: 'e' },
+        { name: 'bold', tipPosition: 'e' },
+        { name: 'italic', tipPosition: 'e' },
+        { name: 'strike', tipPosition: 'e' },
+        { name: 'link', tipPosition: 'e' },
         '|',
-        'list',
-        'ordered-list',
-        'check',
-        'outdent',
-        'indent',
+        { name: 'list', tipPosition: 'e' },
+        { name: 'ordered-list', tipPosition: 'e' },
+        { name: 'check', tipPosition: 'e' },
+        { name: 'outdent', tipPosition: 'e' },
+        { name: 'indent', tipPosition: 'e' },
         '|',
-        'quote',
-        'line',
-        'code',
-        'inline-code',
-        'insert-before',
-        'insert-after',
+        { name: 'quote', tipPosition: 'e' },
+        { name: 'line', tipPosition: 'e' },
+        { name: 'code', tipPosition: 'e' },
+        { name: 'inline-code', tipPosition: 'e' },
+        { name: 'insert-before', tipPosition: 'e' },
+        { name: 'insert-after', tipPosition: 'e' },
         '|',
-        'upload',
-        'table',
+        { name: 'upload', tipPosition: 'e' },
+        { name: 'table', tipPosition: 'e' },
         '|',
-        'undo',
-        'redo',
+        { name: 'undo', tipPosition: 'e' },
+        { name: 'redo', tipPosition: 'e' },
+        {
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>',
+            name: "refresh",
+            tip: t('refresh'),
+            tipPosition: "e",
+            click() {
+                vscode.postMessage({
+                    type: 'refresh'
+                })
+            },
+        },
         '|',
         {
             name: 'sourceCode',
             tip: t('sourceCode'),
-            icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"></path></svg>',
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-layout-split" viewBox="0 0 16 16"><path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3zm8.5-1v12H14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H8.5zm-1 0H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h5.5V2z"/></svg>',
             click() {
                 vscode.postMessage({
                     type: 'sourceCode'
@@ -210,8 +222,21 @@
         }
 
     }
+    /**
+   * Render the document in the webview.
+   */
+     function updateContent(/** @type {string} */ text) {
+        global.vditor.setValue(text);
+    }
 
-    var  textEditTimer;
+    /**
+   * 上传完文件
+   */
+    function uploaded(/** @type {string} */file) {
+        global.vditor.insertValue(file);
+    }
+    
+    var textEditTimer;
 
     const initVditor = (language) => {
 
@@ -270,9 +295,9 @@
             input(/** @type {string} */ value) {
                 //避免更新过较频繁或更新代价较高
                 textEditTimer && clearTimeout(textEditTimer);
-                textEditTimer = setTimeout(() => { 
+                textEditTimer = setTimeout(() => {
                     vscode.postMessage({ type: 'input', content: value });
-                }, 300); 
+                }, 300);
             },
             focus(/** @type {string} */ value) {
                 vscode.postMessage({ type: 'focus', content: value });
@@ -324,40 +349,28 @@
         switch (message.type) {
             case 'update':
                 const text = message.text;
-
                 // Update our webview's content
                 updateContent(text);
-
-
                 // Then persist state information.
                 // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
                 vscode.setState({ text });
-
                 break;
             case 'uploaded':
-                console.log(message.files);
                 message.files.forEach((f) => {
                     uploaded(f);
                 });
-
+                // Then persist state information.
+                // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
+                vscode.setState({ text: global.vditor.getValue() });
                 break;
             case "pasted":
-                global.vditor.insertValue(message.content);
+                uploaded(message.content);
+                // Then persist state information.
+                // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
+                vscode.setState({ text: global.vditor.getValue() });
                 break;
         }
     });
 
-    /**
-   * Render the document in the webview.
-   */
-    function updateContent(/** @type {string} */ text) {
-        global.vditor.setValue(text);
-    }
 
-    /**
-   * 上传完文件
-   */
-    function uploaded(/** @type {string} */file) {
-        global.vditor.insertValue(file);
-    }
 }).call(this, window);

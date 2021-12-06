@@ -114,6 +114,9 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				case 'paste':
 					this.onPaste(webviewPanel, document);
 					return;
+				case 'refresh':
+					updateWebview();
+					return;
 				case 'sourceCode':
 					{
 						vscode.commands.executeCommand('vscode.openWith', document.uri, "default", vscode.ViewColumn.Beside);
