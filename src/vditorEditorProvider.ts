@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ImageSaver } from './imageSaver1';
+import { ImageSaver } from './imageSaver';
 import { VditorConfig } from './config';
 
 export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
