@@ -136,6 +136,15 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 						this.context.globalState.update(VditorEditorProvider.keyVditorOptions, e.options);
 					}
 					return;
+				case 'info':
+					vscode.window.showInformationMessage(e.content);
+					return;
+				case 'warn':
+					vscode.window.showWarningMessage(e.content);
+					return;
+				case 'error':
+					vscode.window.showErrorMessage(e.content);
+					return;
 			}
 		});
 	}
@@ -159,7 +168,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		) + '/';
 
 		var version = VditorConfig.vditorVersion;
-		var options:any = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
+		var options: any = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
 		options = options || {};
 		options.version = version;
 		return /* html */`
