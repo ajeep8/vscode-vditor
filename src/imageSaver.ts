@@ -8,6 +8,8 @@ import * as vscode from 'vscode';
 import * as url from "url";
 import * as http from "http";
 import * as https from "https";
+import replaceAsync from "string-replace-async";
+
 
 export class ImageSaver {
 
@@ -54,22 +56,21 @@ export class ImageSaver {
 
     public pasteTextStr(document: vscode.TextDocument, callback: (data: string) => void) {
         this.document = document;
-        Command.getClipboardContentType((ctxType) => {
+        Command.getClipboardContentType(async (ctxType) => {
             switch (ctxType) {
                 case ClipboardType.html:
                 case ClipboardType.text:
                     {
-                        Command.pasteTextPlain((text) => {
+                        Command.pasteTextPlain(async (text) => {
                             if (text) {
                                 let newContent: string;
                                 //如果是单个的图片url
                                 if (/^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/i.test(text)) {
-                                    newContent = this.pasteMDImageURL(text);
+                                    newContent = await this.pasteMDImageURL(text);
                                 }
                                 else {
                                     //如果是文本,html
-                                    newContent = this.handlerText(text);
-                                    newContent = this.handlerImage(newContent);
+                                    newContent = await this.handlerText(text);
                                 }
                                 callback(newContent);
                             }
@@ -78,7 +79,8 @@ export class ImageSaver {
                     break;
                 case ClipboardType.image:
                     {
-                        callback(this.pasteImage());
+                        var text = await this.pasteImage();
+                        callback(text);
                     }
                     break;
             }
@@ -89,70 +91,56 @@ export class ImageSaver {
     /**
      * HandlerText
      */
-    private handlerText(content: string): string {
+    private async handlerText(content: string): Promise<string> {
+        //如果时html则转换成md
+        if (/<[a-z][\s\S]*>/i.test(content)) {
+            content = this.nhm.translate(content);
+        }
+        //应用替换规则
         for (var i = 0; i < VditorConfig.rules.length; i++) {
             let rule = VditorConfig.rules[i];
             content = rule.replace(content);
         }
-
-        //ishtml
-        if (/<[a-z][\s\S]*>/i.test(content)) {
-            content = this.nhm.translate(content);
-        }
-        return content;
-    }
-
-    /**
-     * HandlerImage
-     */
-    private handlerImage(content: string): string {
-        content = content.replace(/!\[[^\]]*\]\((.*?)\s*("(?:.*[^"])")?\s*\)/gim, (substring: string, ...args: any[]) => {
-            return this.pasteMDImageURL(args[0]);
+        //下载图片
+        return await replaceAsync(content, /!\[[^\]]*\]\((.*?)\s*("(?:.*[^"])")?\s*\)/gim, async (substring: string, ...args: any[]) => {
+            return await this.pasteMDImageURL(args[0]);
         });
-        return content;
     }
 
-    private pasteMDImageURL(imageUrl: string): string {
 
+    //将url中的图片下载到本地
+    private async pasteMDImageURL(imageUrl: string): Promise<string> {
         let filename = imageUrl.split('/').pop()!.split('?')[0];
         let pasteImgContext = PasteImageContext.create(filename, this.document!);
-        this.downloadFile(imageUrl, pasteImgContext!);
+        await this.fetchAndSaveFile(imageUrl, pasteImgContext!.targetFile!.fsPath);
         return pasteImgContext?.rendText()!;
     }
 
 
-    private async downloadFile(imageUrl: string, pasteImgContext: PasteImageContext) {
-        // save image and insert to current edit file
-        await this.fetchAndSaveFile(imageUrl, pasteImgContext.targetFile!.fsPath)
-            .then((imagePath: any) => {
-                console.log(`${imageUrl} download file to ${imagePath}`);
-            }).catch(err => {
-                vscode.window.showErrorMessage('Download failed:' + err);
-            });
-    }
-
-    private pasteImage(): string {
+    //粘贴板直接黏贴的图片
+    private pasteImage(): Promise<string> {
         let r = (Math.random() + 1).toString(36).substring(7);
         let pasteImgContext = PasteImageContext.create(`${r}.png`, this.document!)!;
         // save image and insert to current edit file
-        Command.saveClipboardImageToFileAndGetPath(pasteImgContext.targetFile!.fsPath, imagePath => {
-            if (!imagePath) { return; }
-            if (imagePath === 'no image') {
-                vscode.window.showInformationMessage('There is not an image in the clipboard.');
-                return;
-            }
+        return new Promise((resolve, reject) => {
+            Command.saveClipboardImageToFileAndGetPath(pasteImgContext.targetFile!.fsPath, imagePath => {
+                if (!imagePath || imagePath === 'no image') {
+                    vscode.window.showInformationMessage('There is not an image in the clipboard.');
+                    reject('no image');
+                }
+                else {
+                    resolve(pasteImgContext?.rendText()!);
+                }
+            });
         });
-        return pasteImgContext?.rendText()!;
     }
-
-
 
     /**
  * Fetch file to specified local folder
  * @param fileURL
  * @param dest
  */
-    private  fetchAndSaveFile(fileURL: string, filepath: string) {
+    private fetchAndSaveFile(fileURL: string, filepath: string) {
         let dest = path.dirname(filepath);
         let basename = path.basename(filepath);
         return new Promise((resolve, reject) => {

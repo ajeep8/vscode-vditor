@@ -150,10 +150,10 @@
             if ((e.target).tagName !== 'BUTTON') { return; }
             //@ts-ignore
             let type = (e.target).dataset.type;
-            if (type === 'dark') {
-                global.vditor.setTheme("dark");
-            } else {
+            if (type.search('dark') === -1) {
                 global.vditor.setTheme('classic');
+            } else {
+                global.vditor.setTheme("dark");
             }
         });
     }
@@ -229,6 +229,31 @@
             save(e);
         });
     }
+
+
+    //添加保存图片出发事件
+    function listenPasteImage() {
+        document.addEventListener('keydown', (event) => {
+            const keyName = event.key;
+            if (keyName === 'Control' || keyName === 'Alt') {
+                return;
+            }
+            if (event.ctrlKey && event.altKey && keyName === "v") {
+                vscode.postMessage({ type: 'paste' });
+            }
+        }, false);
+    }
+
+    function listenPasteEvents() {
+        const targets = document.querySelectorAll('.vditor-reset');
+        targets.forEach((value) => {
+            value.addEventListener('paste', (event) => {
+                event.preventDefault();
+                vscode.postMessage({ type: 'paste' });
+            }, false);
+        });
+    }
+
     /**
    * Render the document in the webview.
    */
@@ -298,6 +323,8 @@
                 fixCut();
                 fixLinkClick();
                 listenVditorOptions();
+                listenPasteImage();
+                //listenPasteEvents();
                 vscode.postMessage({ type: 'ready' });
             },
             input(/** @type {string} */ value) {
@@ -308,19 +335,19 @@
                 }, 300);
             },
             focus(/** @type {string} */ value) {
-               // vscode.postMessage({ type: 'focus', content: value });
+                // vscode.postMessage({ type: 'focus', content: value });
             },
             blur(/** @type {string} */ value) {
-              //  vscode.postMessage({ type: 'blur', content: value });
+                //  vscode.postMessage({ type: 'blur', content: value });
             },
             esc(/** @type {string} */ value) {
-             //   vscode.postMessage({ type: 'esc', content: value });
+                //   vscode.postMessage({ type: 'esc', content: value });
             },
             ctrlEnter(/** @type {string} */ value) {
-             //   vscode.postMessage({ type: 'ctrlEnter', content: value });
+                //   vscode.postMessage({ type: 'ctrlEnter', content: value });
             },
             select(/** @type {string} */ value) {
-              //  vscode.postMessage({ type: 'select', content: value });
+                //  vscode.postMessage({ type: 'select', content: value });
             },
         });
     };
@@ -330,17 +357,6 @@
         global.vditor.destroy();
         initVditor(language);
     };
-
-    //添加保存图片出发事件
-    document.addEventListener('keydown', (event) => {
-        const keyName = event.key;
-        if (keyName === 'Control' || keyName === 'Alt') {
-            return;
-        }
-        if (event.ctrlKey && event.altKey && keyName === "v") {
-            vscode.postMessage({ type: 'paste' });
-        }
-    }, false);
 
 
 
