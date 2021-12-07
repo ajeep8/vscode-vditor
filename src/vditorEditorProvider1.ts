@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ImageSaver } from './imageSaver';
-
+import { ImageSaver } from './imageSaver1';
+import { VditorConfig } from './config';
 
 export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 
@@ -162,7 +162,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 
 
 		var options = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
-
+		var version= VditorConfig.vditorVersion;
 
 		return /* html */`
 			<!DOCTYPE html>
@@ -172,10 +172,8 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 				<meta http-equiv="X-UA-Compatible" content="ie=edge">
 				<base href="${baseHref}" />
-
-				<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.css" /> 
+				<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor${version}/dist/index.css" /> 
 				<link href="${styleMainUri}" rel="stylesheet" />
-
 				<title>Vditor</title>
 			</head>
 			<body>
@@ -185,7 +183,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 					global.vditorOptions = ${JSON.stringify(options)} || {};
 				}).call(this, window);
 				</script>
-				<script src="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.min.js"></script>
+				<script src="https://cdn.jsdelivr.net/npm/vditor${version}/dist/index.min.js"></script>
 				<script src="${scriptUri}"></script>
 			</body>
 			</html>`;

@@ -15,12 +15,7 @@ export class PasteImageContext {
     public convertToBase64: boolean = false;
 
     public removeTargetFileAfterConvert: boolean = false;
-
-    public imgTag?: {
-        width: string;
-        height: string;
-    } | null;
-
+ 
 
     public rendText(): string | undefined {
         let renderText: string | undefined;
@@ -40,12 +35,7 @@ export class PasteImageContext {
         }
 
         let renderText = base64Encode(targetFilePath);
-        let imgTag = this.imgTag;
-        if (imgTag) {
-            renderText = `<img src='data:image/png;base64,${renderText}' width='${imgTag.width}' height='${imgTag.height}'/>`;
-        } else {
-            renderText = `![](data:image/png;base64,${renderText})`;
-        }
+        renderText = `![](data:image/png;base64,${renderText})`;
 
         const rmOptions: fs.RmOptions = {
             recursive: true,
@@ -71,10 +61,6 @@ export class PasteImageContext {
         let imageFilePath = PasteImageContext.encodePath(path.relative(path.dirname(docPath), this.targetFile!.fsPath));
 
         if (languageId === 'markdown') {
-            let imgTag = this.imgTag;
-            if (imgTag) {
-                return `<img src='${imageFilePath}' width='${imgTag.width}' height='${imgTag.height}'/>`;
-            }
             return `![](${imageFilePath})`;
         } else {
             return imageFilePath;
@@ -170,17 +156,7 @@ export class PasteImageContext {
             pasteImgContext.convertToBase64 = false;
             pasteImgContext.removeTargetFileAfterConvert = false;
         }
-
-        if (VditorConfig.enableImgTagConfig && inputUri.query) {
-            // parse `<filepath>[?width,height]`. for example. /abc/abc.png?200,100
-            let ar = inputUri.query.split(',');
-            if (ar) {
-                pasteImgContext.imgTag = {
-                    width: ar[0],
-                    height: ar[1]
-                };
-            }
-        }
+ 
         let imgPath = pasteImgContext?.targetFile?.fsPath;
         if (!imgPath || !PasteImageContext.prepareDirForFile(imgPath)) {
             vscode.window.showErrorMessage('Make folder failed:' + imgPath);

@@ -28,8 +28,7 @@ export class VditorConfig {
         for (var i = 0; i < rules.length; i++) {
             let rule = rules[i];
             this._rules.push(new ConfigRule(rule.regex, rule.options, rule.replace));
-        }
-
+        } 
         return this._rules;
     }
 
@@ -37,15 +36,14 @@ export class VditorConfig {
         let config = vscode.workspace.getConfiguration('Vditor');
         return config.imgSavePath;
     }
-
-    public static get enableImgTagConfig(): boolean {
-        let config = vscode.workspace.getConfiguration('Vditor');
-        return config.enableImgTag;
-    }
-
+  
     public static get encodePathConfig(): string {
         let config = vscode.workspace.getConfiguration('Vditor');
         return config.encodePath;
     }
-
+    
+    public static get vditorVersion(): string {
+        let config = vscode.workspace.getConfiguration('Vditor');
+        return config.vditorVersion;
+    }
 }

@@ -41,25 +41,10 @@
       "type": "object",
       "title": "Vditor Configuration",
       "properties": {
-        "Vditor.imgSavePath": {
+        "Vditor.vditorVersion": {
           "type": "string",
-          "default": "./",
-          "description": "The destination to save image file."
-        },
-        "Vditor.enableImgTag": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/Disable using img tag with width and height for pasting image."
-        },
-        "Vditor.encodePath": {
-          "type": "string",
-          "enum": [
-            "none",
-            "encodeURI",
-            "encodeSpaceOnly"
-          ],
-          "default": "encodeSpaceOnly",
-          "description": "Encode path to URL-encode format. Options: none, encodeURI, encodeSpaceOnly"
+          "default": "",
+          "description": "vditor的版本号,以@开头"
         },
         "Vditor.rules": {
           "type": "array",
@@ -75,7 +60,22 @@
               "replace": "[]($1)"
             }
           ],
-          "description": "Rules for markdown paste."
+          "description": "markdown的解析规则应用于整个markdown"
+        },
+        "Vditor.imgSavePath": {
+          "type": "string",
+          "default": "./",
+          "description": "图片保存目录,可用变量${workspaceRoot},${fileExtname},${fileBasenameNoExtension},${fileBasename},${fileDirname}"
+        },
+        "Vditor.encodePath": {
+          "type": "string",
+          "enum": [
+            "none",
+            "encodeURI",
+            "encodeSpaceOnly"
+          ],
+          "default": "encodeSpaceOnly",
+          "description": "将路径编码为URL-encode格式. 选项: none, encodeURI, encodeSpaceOnly"
         }
       }
     },
