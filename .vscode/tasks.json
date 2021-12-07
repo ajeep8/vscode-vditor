@@ -46,6 +46,33 @@
 			"args": [
 				"package"
 			]
+		},
+		{
+			"label": "vsce publish major",
+			"type": "shell",
+			"command": "vsce",
+			"args": [
+				"publish",
+				"major"
+			]
+		},
+		{
+			"label": "vsce publish minor",
+			"type": "shell",
+			"command": "vsce",
+			"args": [
+				"publish",
+				"minor"
+			]
+		},
+		{
+			"label": "vsce publish patch",
+			"type": "shell",
+			"command": "vsce",
+			"args": [
+				"publish",
+				"patch"
+			]
 		}
 	]
 }

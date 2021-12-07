@@ -17,12 +17,9 @@
   "license": "(MIT)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zhemima/vscode-vditor.git"
+    "url": "https://e.coding.net/godgodgame/tools/vscode-vditor.git"
   },
-  "homepage": "https://github.com/zhemima/vscode-vditor",
-  "bugs": {
-    "url": "https://github.com/zhemima/vscode-vditor/issues"
-  },
+  "homepage": "https://godgodgame.coding.net/public/tools/vscode-vditor/git/files",
   "engines": {
     "vscode": "^1.62.0"
   },
