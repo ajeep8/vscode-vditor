@@ -260,6 +260,13 @@
             preview: {
                 theme: {
                     current: global.vditorOptions.contentTheme || 'light',
+                    list: {
+                        "light": "Light",
+                        "dark": "Dark",
+                        "wechat": "WeChat",
+                        "ant-design": "Ant"
+                    },
+                    path: "https://cdn.jsdelivr.net/gh/zhemima/vditor@latest/src/css/content-theme/"
                 },
                 hljs: {
                     style: global.vditorOptions.codeTheme || 'github',

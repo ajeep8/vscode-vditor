@@ -158,10 +158,10 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 			webview.asWebviewUri(vscode.Uri.file(document.uri.fsPath)).toString()
 		) + '/';
 
-
-		var options = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
 		var version = VditorConfig.vditorVersion;
-
+		var options:any = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
+		options = options || {};
+		options.version = version;
 		return /* html */`
 			<!DOCTYPE html>
 			<html>
@@ -178,7 +178,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				<div id="vditor"></div>
 				<script>
 				(function (global) {
-					global.vditorOptions = ${JSON.stringify(options)} || {};
+					global.vditorOptions = ${JSON.stringify(options)};
 				}).call(this, window);
 				</script>
 				<script src="https://cdn.jsdelivr.net/npm/vditor${version}/dist/index.min.js"></script>

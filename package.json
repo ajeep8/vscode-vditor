@@ -43,7 +43,7 @@
       "properties": {
         "Vditor.vditorVersion": {
           "type": "string",
-          "default": "",
+          "default": "@latest",
           "description": "vditor的版本号,以@开头"
         },
         "Vditor.rules": {
