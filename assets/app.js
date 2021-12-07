@@ -298,16 +298,7 @@
                 fixCut();
                 fixLinkClick();
                 listenVditorOptions();
-
-                // Webviews are normally torn down when not visible and re-created when they become visible again.
-                // State lets us save information across these re-loads
-                const state = vscode.getState();
-                if (state) {
-                    updateContent(state.text);
-                }
-                else {
-                    vscode.postMessage({ type: 'ready' });
-                }
+                vscode.postMessage({ type: 'ready' });
             },
             input(/** @type {string} */ value) {
                 //避免更新过较频繁或更新代价较高
@@ -343,12 +334,9 @@
     //添加保存图片出发事件
     document.addEventListener('keydown', (event) => {
         const keyName = event.key;
-
         if (keyName === 'Control' || keyName === 'Alt') {
-            // do not alert when only Control key is pressed.
             return;
         }
-
         if (event.ctrlKey && event.altKey && keyName === "v") {
             vscode.postMessage({ type: 'paste' });
         }
@@ -364,23 +352,14 @@
                 const text = message.text;
                 // Update our webview's content
                 updateContent(text);
-                // Then persist state information.
-                // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
-                vscode.setState({ text });
                 break;
             case 'uploaded':
                 message.files.forEach((f) => {
                     uploaded(f);
                 });
-                // Then persist state information.
-                // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
-                vscode.setState({ text: global.vditor.getValue() });
                 break;
             case "pasted":
                 uploaded(message.content);
-                // Then persist state information.
-                // This state is returned in the call to `vscode.getState` below when a webview is reloaded.
-                vscode.setState({ text: global.vditor.getValue() });
                 break;
         }
     });
