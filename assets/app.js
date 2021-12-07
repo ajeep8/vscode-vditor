@@ -146,7 +146,6 @@
     function fixDarkTheme() {
         let $ct = document.querySelector('[data-type="content-theme"]');
         $ct.nextElementSibling.addEventListener('click', (e) => {
-
             //@ts-ignore
             if ((e.target).tagName !== 'BUTTON') {return;}
             //@ts-ignore
@@ -198,28 +197,40 @@
         };
     }
 
-    //保存一些简单的配置
-    function saveVditorOptions() {
-        let x = document.querySelectorAll('.vditor-toolbar button[data-mode], .vditor-toolbar button[data-type]');
-        var i;
-        for (i = 0; i < x.length; i++) {
-            x[i].addEventListener('click', e => {
-                //间隔一下因为是先设置然后再获取..否则只是获取的是当前的配置
-                setTimeout(() => {
-                    let vditorOptions = {
-                        theme: global.vditor.vditor.options.theme,
-                        mode: global.vditor.vditor.currentMode,
-                        previewtheme: global.vditor.vditor.options.preview.theme.current
-                    };
-                    vscode.postMessage({
-                        type: 'config',
-                        options: vditorOptions,
-                    });
-                }, 300);
-
-            });
+    //监听选项改变事件
+    function listenVditorOptions() {
+        
+        function saveOptions()
+        {
+            //间隔一下因为是先设置然后再获取..否则只是获取的是当前的配置
+            setTimeout(() => {
+                let vditorOptions = {
+                    theme: global.vditor.vditor.options.theme, 
+                    contentTheme: global.vditor.vditor.options.preview.theme.current,
+                    codeTheme:global.vditor.vditor.options.preview.hljs.style,
+                    editMode: global.vditor.vditor.currentMode,
+                };
+                vscode.postMessage({
+                    type: 'config',
+                    options: vditorOptions,
+                });
+            }, 300);
         }
-
+        document.querySelector('[data-type="content-theme"]').nextElementSibling.addEventListener('click', (e) => {
+            //@ts-ignore
+            if ((e.target).tagName !== 'BUTTON') {return;}
+            saveOptions();
+        });
+        document.querySelector('[data-type="code-theme"]').nextElementSibling.addEventListener('click', (e) => {
+            //@ts-ignore
+            if ((e.target).tagName !== 'BUTTON') {return;}
+            saveOptions();
+        });
+        document.querySelector('[data-type="edit-mode"]').nextElementSibling.addEventListener('click', (e) => {
+            //@ts-ignore
+            if ((e.target).tagName !== 'BUTTON') {return;}
+            saveOptions();
+        });
     }
     /**
    * Render the document in the webview.
@@ -236,21 +247,22 @@
     }
     
     var textEditTimer;
-
     const initVditor = (language) => {
-
         // @ts-ignore
         global.vditor = new Vditor('vditor', {
             lang: language,
             theme: global.vditorOptions.theme || 'classic',
-            mode: global.vditorOptions.mode || 'ir',
+            mode: global.vditorOptions.editMode || 'ir',
             toolbar: toolbar,
             toolbarConfig: {
                 pin: true,
             },
             preview: {
                 theme: {
-                    current: global.vditorOptions.previewtheme || 'light',
+                    current: global.vditorOptions.contentTheme || 'light',
+                },
+                hljs:{
+                    style:global.vditorOptions.codeTheme || 'github',
                 },
                 markdown: {
                     toc: true,
@@ -285,7 +297,7 @@
                 fixDarkTheme();
                 fixCut();
                 fixLinkClick();
-                saveVditorOptions();
+                listenVditorOptions();
                 vscode.postMessage({ type: 'ready' });
             },
             input(/** @type {string} */ value) {
