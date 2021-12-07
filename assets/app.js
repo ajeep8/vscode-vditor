@@ -17,7 +17,7 @@
             copyHtml: 'Copy HTML',
             sourceCode: "Source Code"
         },
-         // eslint-disable-next-line @typescript-eslint/naming-convention
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "zh_CN": {
             refresh: "重载",
             copyMarkdown: '复制 Markdown',
@@ -26,20 +26,20 @@
         },
     };
 
-    const lang = (() => {
-        let l = navigator.language.replace('-', '_');
+    //获取当前浏览器语言
+    const lang = navigator.language.replace('-', '_');
+
+    //多语言
+    function t(/** @type {string} */ msg) {
+        let l = lang;
         if (!langs[l]) {
             l = 'en_US';
         };
-        return l;
-    })();
-
-    function t(msg) {
-        return (langs[lang] && langs[lang][msg]) || langs.en_US[msg];
+        return langs[l][msg];
     }
 
 
-    //https://icons.getbootstrap.com/
+    //icon使用https://icons.getbootstrap.com/
     const toolbar = [
         { name: 'emoji', tipPosition: 'e' },
         { name: 'headings', tipPosition: 'e' },
@@ -147,7 +147,7 @@
         let $ct = document.querySelector('[data-type="content-theme"]');
         $ct.nextElementSibling.addEventListener('click', (e) => {
             //@ts-ignore
-            if ((e.target).tagName !== 'BUTTON') {return;}
+            if ((e.target).tagName !== 'BUTTON') { return; }
             //@ts-ignore
             let type = (e.target).dataset.type;
             if (type === 'dark') {
@@ -196,46 +196,43 @@
             return window;
         };
     }
-
+    //保存选项
+    function saveOptions() {
+        let vditorOptions = {
+            theme: global.vditor.vditor.options.theme,
+            contentTheme: global.vditor.vditor.options.preview.theme.current,
+            codeTheme: global.vditor.vditor.options.preview.hljs.style,
+            editMode: global.vditor.vditor.currentMode,
+        };
+        vscode.postMessage({
+            type: 'config',
+            options: vditorOptions,
+        });
+    }
     //监听选项改变事件
     function listenVditorOptions() {
-        
-        function saveOptions()
-        {
+        function save(/** @type {Event} */e) {
+            //@ts-ignore
+            if ((e.target).tagName !== 'BUTTON') { return; }
             //间隔一下因为是先设置然后再获取..否则只是获取的是当前的配置
             setTimeout(() => {
-                let vditorOptions = {
-                    theme: global.vditor.vditor.options.theme, 
-                    contentTheme: global.vditor.vditor.options.preview.theme.current,
-                    codeTheme:global.vditor.vditor.options.preview.hljs.style,
-                    editMode: global.vditor.vditor.currentMode,
-                };
-                vscode.postMessage({
-                    type: 'config',
-                    options: vditorOptions,
-                });
+                saveOptions();
             }, 300);
         }
         document.querySelector('[data-type="content-theme"]').nextElementSibling.addEventListener('click', (e) => {
-            //@ts-ignore
-            if ((e.target).tagName !== 'BUTTON') {return;}
-            saveOptions();
+            save(e);
         });
         document.querySelector('[data-type="code-theme"]').nextElementSibling.addEventListener('click', (e) => {
-            //@ts-ignore
-            if ((e.target).tagName !== 'BUTTON') {return;}
-            saveOptions();
+            save(e);
         });
         document.querySelector('[data-type="edit-mode"]').nextElementSibling.addEventListener('click', (e) => {
-            //@ts-ignore
-            if ((e.target).tagName !== 'BUTTON') {return;}
-            saveOptions();
+            save(e);
         });
     }
     /**
    * Render the document in the webview.
    */
-     function updateContent(/** @type {string} */ text) {
+    function updateContent(/** @type {string} */ text) {
         global.vditor.setValue(text);
     }
 
@@ -245,7 +242,7 @@
     function uploaded(/** @type {string} */file) {
         global.vditor.insertValue(file);
     }
-    
+
     var textEditTimer;
     const initVditor = (language) => {
         // @ts-ignore
@@ -257,12 +254,15 @@
             toolbarConfig: {
                 pin: true,
             },
+            cache: {
+                enable: false
+            },
             preview: {
                 theme: {
                     current: global.vditorOptions.contentTheme || 'light',
                 },
-                hljs:{
-                    style:global.vditorOptions.codeTheme || 'github',
+                hljs: {
+                    style: global.vditorOptions.codeTheme || 'github',
                 },
                 markdown: {
                     toc: true,
@@ -331,6 +331,7 @@
         initVditor(language);
     };
 
+    //添加保存图片出发事件
     document.addEventListener('keydown', (event) => {
         const keyName = event.key;
 

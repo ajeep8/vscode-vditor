@@ -85,7 +85,10 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.type) {
 				case 'ready':
-					this.onReady(document);
+					updateWebview();
+					return;
+				case 'refresh':
+					updateWebview();
 					return;
 				case "save":
 					this.onSave(document, e.content);
@@ -114,9 +117,6 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				case 'paste':
 					this.onPaste(webviewPanel, document);
 					return;
-				case 'refresh':
-					updateWebview();
-					return;
 				case 'sourceCode':
 					{
 						vscode.commands.executeCommand('vscode.openWith', document.uri, "default", vscode.ViewColumn.Beside);
@@ -138,8 +138,6 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 					return;
 			}
 		});
-
-		updateWebview();
 	}
 
 
@@ -162,7 +160,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 
 
 		var options = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
-		var version= VditorConfig.vditorVersion;
+		var version = VditorConfig.vditorVersion;
 
 		return /* html */`
 			<!DOCTYPE html>
@@ -216,9 +214,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	private onFocus(document: vscode.TextDocument, content: any) {
 
 	}
-	private onReady(document: vscode.TextDocument) {
 
-	}
 
 	private onUpload(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument, files: any[]) {
 		var imageSaver = ImageSaver.getInstance();
