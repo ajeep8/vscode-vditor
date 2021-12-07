@@ -298,7 +298,16 @@
                 fixCut();
                 fixLinkClick();
                 listenVditorOptions();
-                vscode.postMessage({ type: 'ready' });
+
+                // Webviews are normally torn down when not visible and re-created when they become visible again.
+                // State lets us save information across these re-loads
+                const state = vscode.getState();
+                if (state) {
+                    updateContent(state.text);
+                }
+                else {
+                    vscode.postMessage({ type: 'ready' });
+                }
             },
             input(/** @type {string} */ value) {
                 //避免更新过较频繁或更新代价较高
@@ -308,19 +317,19 @@
                 }, 300);
             },
             focus(/** @type {string} */ value) {
-                vscode.postMessage({ type: 'focus', content: value });
+               // vscode.postMessage({ type: 'focus', content: value });
             },
             blur(/** @type {string} */ value) {
-                vscode.postMessage({ type: 'blur', content: value });
+              //  vscode.postMessage({ type: 'blur', content: value });
             },
             esc(/** @type {string} */ value) {
-                vscode.postMessage({ type: 'esc', content: value });
+             //   vscode.postMessage({ type: 'esc', content: value });
             },
             ctrlEnter(/** @type {string} */ value) {
-                vscode.postMessage({ type: 'ctrlEnter', content: value });
+             //   vscode.postMessage({ type: 'ctrlEnter', content: value });
             },
             select(/** @type {string} */ value) {
-                vscode.postMessage({ type: 'select', content: value });
+              //  vscode.postMessage({ type: 'select', content: value });
             },
         });
     };
@@ -345,12 +354,7 @@
         }
     }, false);
 
-    // Webviews are normally torn down when not visible and re-created when they become visible again.
-    // State lets us save information across these re-loads
-    const state = vscode.getState();
-    if (state) {
-        updateContent(state.text);
-    }
+
 
     // Handle messages sent from the extension to the webview
     global.addEventListener('message', event => {
