@@ -46,4 +46,9 @@ export class VditorConfig {
         let config = vscode.workspace.getConfiguration('Vditor');
         return config.vditorVersion;
     }
+
+    public static get autoDownloadToLocal(): boolean {
+        let config = vscode.workspace.getConfiguration('Vditor');
+        return config.autoDownloadToLocal;
+    }
 }

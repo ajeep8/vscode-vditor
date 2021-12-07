@@ -88,8 +88,25 @@ export class ImageSaver {
     }
 
 
+    public async pasteMD(document: vscode.TextDocument, content: string): Promise<string> {
+        this.document = document;
+        //应用替换规则
+        for (var i = 0; i < VditorConfig.rules.length; i++) {
+            let rule = VditorConfig.rules[i];
+            content = rule.replace(content);
+        }
+        //下载图片
+        return await replaceAsync(content, /!\[[^\]]*\]\((.*?)\s*("(?:.*[^"])")?\s*\)/gim, async (substring: string, ...args: any[]) => {
+            const urlParsed = url.parse(args[0]);
+            if (urlParsed.protocol === null) {
+                return substring;
+            }
+            return await this.pasteMDImageURL(args[0]);
+        });
+    }
+
     /**
-     * HandlerText
+     * 编辑器下黏贴文本,需要借助工具才能黏贴html,否则只能黏贴文本,而文本不会含有图片
      */
     private async handlerText(content: string): Promise<string> {
         //如果时html则转换成md
@@ -103,6 +120,10 @@ export class ImageSaver {
         }
         //下载图片
         return await replaceAsync(content, /!\[[^\]]*\]\((.*?)\s*("(?:.*[^"])")?\s*\)/gim, async (substring: string, ...args: any[]) => {
+            const urlParsed = url.parse(args[0]);
+            if (urlParsed.protocol === null) {
+                return substring;
+            }
             return await this.pasteMDImageURL(args[0]);
         });
     }

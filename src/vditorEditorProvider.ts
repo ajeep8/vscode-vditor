@@ -117,6 +117,9 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				case 'paste':
 					this.onPaste(webviewPanel, document);
 					return;
+				case 'pasteMD':
+					this.onPasteMD(document, e.content);
+					return;
 				case 'sourceCode':
 					{
 						vscode.commands.executeCommand('vscode.openWith', document.uri, "default", vscode.ViewColumn.Beside);
@@ -150,7 +153,6 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	}
 
 
-
 	/**
 	 * Get the static html used for the editor webviews.
 	 */
@@ -167,10 +169,10 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 			webview.asWebviewUri(vscode.Uri.file(document.uri.fsPath)).toString()
 		) + '/';
 
-		var version = VditorConfig.vditorVersion;
 		var options: any = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
 		options = options || {};
-		options.version = version;
+		options.version = VditorConfig.vditorVersion;
+		options.autoDownloadToLocal = VditorConfig.autoDownloadToLocal;
 		return /* html */`
 			<!DOCTYPE html>
 			<html>
@@ -179,7 +181,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 				<meta http-equiv="X-UA-Compatible" content="ie=edge">
 				<base href="${baseHref}" />
-				<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor${version}/dist/index.css" /> 
+				<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor${options.version}/dist/index.css" /> 
 				<link href="${styleMainUri}" rel="stylesheet" />
 				<title>Vditor</title>
 			</head>
@@ -190,7 +192,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 					global.vditorOptions = ${JSON.stringify(options)};
 				}).call(this, window);
 				</script>
-				<script src="https://cdn.jsdelivr.net/npm/vditor${version}/dist/index.min.js"></script>
+				<script src="https://cdn.jsdelivr.net/npm/vditor${options.version}/dist/index.min.js"></script>
 				<script src="${scriptUri}"></script>
 			</body>
 			</html>`;
@@ -245,6 +247,17 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 			});
 		});
 	}
+
+	private async onPasteMD(document: vscode.TextDocument, content: any) {
+		if(VditorConfig.autoDownloadToLocal === false)
+		{
+			return;
+		}
+		var imageSaver = ImageSaver.getInstance();
+		var data = await imageSaver.pasteMD(document, content);
+		this.updateTextDocument(document, data);
+	}
+
 
 	/**
  * Write out the json to a given document.

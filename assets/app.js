@@ -248,8 +248,11 @@
         const targets = document.querySelectorAll('.vditor-reset');
         targets.forEach((value) => {
             value.addEventListener('paste', (event) => {
-                event.preventDefault();
-                vscode.postMessage({ type: 'paste' });
+                //阻止不了原来的默认事件,所以改为黏贴后触发黏贴事件,然后下载图片
+                //event.preventDefault();
+                setTimeout(function () {
+                    vscode.postMessage({ type: 'pasteMD',content:global.vditor.getValue() });
+                }, 10);
             }, false);
         });
     }
@@ -324,7 +327,7 @@
                 fixLinkClick();
                 listenVditorOptions();
                 listenPasteImage();
-                //listenPasteEvents();
+                listenPasteEvents();
                 vscode.postMessage({ type: 'ready' });
             },
             input(/** @type {string} */ value) {

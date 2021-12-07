@@ -43,6 +43,11 @@
           "default": "@latest",
           "description": "vditor的版本号,以@开头"
         },
+        "Vditor.autoDownloadToLocal": {
+          "type": "boolean",
+          "default": false,
+          "description": "CTRL+V黏贴图片是否自动下载图片到本地"
+        },
         "Vditor.rules": {
           "type": "array",
           "default": [
