@@ -10,16 +10,15 @@
     const vscode = acquireVsCodeApi();
 
     const langs = {
-        en_US: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        "en_US": {
+            refresh: "refresh",
             copyMarkdown: 'Copy Markdown',
             copyHtml: 'Copy HTML',
+            sourceCode: "Source Code"
         },
-        ja_JP: {
-        },
-        ko_KR: {
-        },
-        zh_CN: {
-            save: '保存',
+         // eslint-disable-next-line @typescript-eslint/naming-convention
+        "zh_CN": {
             refresh: "重载",
             copyMarkdown: '复制 Markdown',
             copyHtml: '复制 HTML',
@@ -30,7 +29,7 @@
     const lang = (() => {
         let l = navigator.language.replace('-', '_');
         if (!langs[l]) {
-            l = 'zh_CN';
+            l = 'en_US';
         };
         return l;
     })();
@@ -313,7 +312,7 @@
             },
         });
     };
-    initVditor('zh_CN');
+    initVditor(lang);
 
     global.setLang = (language) => {
         global.vditor.destroy();
