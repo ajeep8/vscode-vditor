@@ -75,7 +75,7 @@
             click() {
                 vscode.postMessage({
                     type: 'refresh'
-                })
+                });
             },
         },
         '|',
@@ -86,7 +86,7 @@
             click() {
                 vscode.postMessage({
                     type: 'sourceCode'
-                })
+                });
             },
         },
         { name: 'edit-mode', tipPosition: 'e', },
@@ -145,11 +145,11 @@
 
     // 切换 content-theme 时自动修改 vditor theme
     function fixDarkTheme() {
-        let $ct = document.querySelector('[data-type="content-theme"]')
+        let $ct = document.querySelector('[data-type="content-theme"]');
         $ct.nextElementSibling.addEventListener('click', (e) => {
 
             //@ts-ignore
-            if ((e.target).tagName !== 'BUTTON') return;
+            if ((e.target).tagName !== 'BUTTON') {return;}
             //@ts-ignore
             let type = (e.target).dataset.type;
             if (type === 'dark') {
@@ -196,12 +196,12 @@
         window.open = (url) => {
             openLink(url);
             return window;
-        }
+        };
     }
 
     //保存一些简单的配置
     function saveVditorOptions() {
-        let x = document.querySelectorAll('.vditor-toolbar button[data-mode], .vditor-toolbar button[data-type]')
+        let x = document.querySelectorAll('.vditor-toolbar button[data-mode], .vditor-toolbar button[data-type]');
         var i;
         for (i = 0; i < x.length; i++) {
             x[i].addEventListener('click', e => {
@@ -243,9 +243,6 @@
         // @ts-ignore
         global.vditor = new Vditor('vditor', {
             lang: language,
-            width: '100%',
-            height: window.innerHeight + 100,
-            minHeight: '100%',
             theme: global.vditorOptions.theme || 'classic',
             mode: global.vditorOptions.mode || 'ir',
             toolbar: toolbar,

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ImageSaver } from './imagesaver';
+import { ImageSaver } from './imageSaver';
 
 
 export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
@@ -15,12 +15,12 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	}
 
 	public static readonly viewType = 'vscode-vdito.vdito';
-	public static KeyVditorOptions = 'vditor.options'
+	public static keyVditorOptions = 'vditor.options';
 	constructor(
 		private readonly context: vscode.ExtensionContext
 	) {
 
-		context.globalState.setKeysForSync([VditorEditorProvider.KeyVditorOptions]);
+		context.globalState.setKeysForSync([VditorEditorProvider.keyVditorOptions]);
 	}
 
 	/**
@@ -56,7 +56,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
 
-				if (e.contentChanges.length == 0) {
+				if (e.contentChanges.length === 0) {
 					//没有内容改变返回
 					return;
 				}
@@ -124,16 +124,16 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 					return;
 				case 'link':
 					{
-						let url = e.href
+						let url = e.href;
 						if (!/^http/.test(url)) {
-							url = path.resolve(document.uri.fsPath, '..', url)
+							url = path.resolve(document.uri.fsPath, '..', url);
 						}
-						vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(url))
+						vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(url));
 					}
 					return;
 				case "config":
 					{
-						this.context.globalState.update(VditorEditorProvider.KeyVditorOptions, e.options)
+						this.context.globalState.update(VditorEditorProvider.keyVditorOptions, e.options);
 					}
 					return;
 			}
@@ -161,7 +161,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		) + '/';
 
 
-		var options = this.context.globalState.get(VditorEditorProvider.KeyVditorOptions);
+		var options = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
 
 
 		return /* html */`
