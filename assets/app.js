@@ -266,7 +266,7 @@
                         "wechat": "WeChat",
                         "ant-design": "Ant"
                     },
-                    path: "https://cdn.jsdelivr.net/gh/zhemima/vditor@latest/src/css/content-theme"
+                    path: `https://cdn.jsdelivr.net/gh/zhemima/vditor${global.vditorOptions.version}/src/css/content-theme`
                 },
                 hljs: {
                     style: global.vditorOptions.codeTheme || 'github',
