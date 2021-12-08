@@ -47,8 +47,8 @@ export class VditorConfig {
         return config.vditorVersion;
     }
 
-    public static get autoDownloadToLocal(): boolean {
+    public static get autoSaveImage(): boolean {
         let config = vscode.workspace.getConfiguration('Vditor');
-        return config.autoDownloadToLocal;
+        return config.autoSaveImage;
     }
 }

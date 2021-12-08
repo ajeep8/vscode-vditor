@@ -43,7 +43,7 @@
           "default": "@latest",
           "description": "vditor的版本号,以@开头"
         },
-        "Vditor.autoDownloadToLocal": {
+        "Vditor.autoSaveImage": {
           "type": "boolean",
           "default": false,
           "description": "CTRL+V黏贴图片是否自动下载图片到本地"
@@ -62,7 +62,7 @@
               "replace": "[]($1)"
             }
           ],
-          "description": "markdown的解析规则应用于整个markdown"
+          "description": "markdown的解析规则,黏贴到文档时将应用于整个markdown"
         },
         "Vditor.imgSavePath": {
           "type": "string",

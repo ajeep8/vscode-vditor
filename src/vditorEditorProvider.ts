@@ -157,6 +157,15 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	 * Get the static html used for the editor webviews.
 	 */
 	private getHtmlForWebview(webview: vscode.Webview, document: vscode.TextDocument): string {
+
+
+		var options: any = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
+		options = options || {};
+		options.version = VditorConfig.vditorVersion;
+		options.autoSaveImage = VditorConfig.autoSaveImage;
+		options.themePath =  webview.asWebviewUri(vscode.Uri.joinPath(
+			this.context.extensionUri, 'assets', 'content-theme')).toString();
+
 		// Local path to script and css for the webview
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(
 			this.context.extensionUri, 'assets', 'app.js'));
@@ -169,10 +178,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 			webview.asWebviewUri(vscode.Uri.file(document.uri.fsPath)).toString()
 		) + '/';
 
-		var options: any = this.context.globalState.get(VditorEditorProvider.keyVditorOptions);
-		options = options || {};
-		options.version = VditorConfig.vditorVersion;
-		options.autoDownloadToLocal = VditorConfig.autoDownloadToLocal;
+	
 		return /* html */`
 			<!DOCTYPE html>
 			<html>
@@ -249,7 +255,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	}
 
 	private async onPasteMD(document: vscode.TextDocument, content: any) {
-		if(VditorConfig.autoDownloadToLocal === false)
+		if(VditorConfig.autoSaveImage === false)
 		{
 			return;
 		}

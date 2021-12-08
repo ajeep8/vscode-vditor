@@ -254,6 +254,10 @@
                     vscode.postMessage({ type: 'pasteMD',content:global.vditor.getValue() });
                 }, 10);
             }, false);
+
+            value.addEventListener('cut', (event) => {
+                vscode.postMessage({ type: 'input', content: global.vditor.getValue() });
+            }, false);
         });
     }
 
@@ -277,6 +281,7 @@
         global.vditor = new Vditor('vditor', {
             lang: language,
             theme: global.vditorOptions.theme || 'classic',
+            icon:'material',
             mode: global.vditorOptions.editMode || 'ir',
             toolbar: toolbar,
             toolbarConfig: {
@@ -292,13 +297,15 @@
                         "light": "Light",
                         "dark": "Dark",
                         "wechat": "WeChat",
-                        "ant-design": "Ant"
+                        "ant-design": "Ant",
+                        "github-dark":"github-dark",
+                        "github-light":"github-light"
                     },
-                    //path: `https://cdn.jsdelivr.net/gh/zhemima/vditor@master/src/css/content-theme`
+                    path: global.vditorOptions.themePath||`https://cdn.jsdelivr.net/npm/vditor${global.vditorOptions.version}/dist/css/content-theme`
                 },
                 hljs: {
                     style: global.vditorOptions.codeTheme || 'github',
-                    lineNumber:true,
+                    lineNumber:false,
                 },
                 markdown: {
                     toc: true,
@@ -354,15 +361,16 @@
             },
         });
     };
-    initVditor(lang);
+
+    //移除vscode的特性样式
+    var htmlElement = document.querySelector("html");
+    htmlElement.removeAttribute("style"); 
 
     global.setLang = (language) => {
         global.vditor.destroy();
         initVditor(language);
     };
-
-
-
+   
     // Handle messages sent from the extension to the webview
     global.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
@@ -383,5 +391,6 @@
         }
     });
 
+    initVditor(lang);
 
 }).call(this, window);
