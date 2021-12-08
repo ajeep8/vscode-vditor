@@ -131,3 +131,8 @@ body,
   height: 100%;
   width: 100%;
 }
+
+
+.vditor-ir__node--expand .vditor-ir__preview {
+	display: none;
+}

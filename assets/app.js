@@ -318,7 +318,6 @@
                         type: 'upload',
                         files: files.map((f) => { return f.path; }),
                     });
-                    return null;
                 },
             },
             after() {
