@@ -1,5 +1,5 @@
 add-type -an system.windows.forms
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[System.Console]::OutputEncoding = [System.Console]::InputEncoding = [System.Text.Encoding]::UTF8
 
 $dataObj = [System.Windows.Forms.Clipboard]::GetDataObject();
 

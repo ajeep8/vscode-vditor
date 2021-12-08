@@ -42,7 +42,12 @@ export class Command {
                 }
                 //windows html format 解析麻烦,且如果是中文会乱码
                 //https://docs.microsoft.com/zh-cn/windows/win32/dataxchg/html-clipboard-format
-                else if (type === "UnicodeText" || type === "Text" || type === "HTML Format") {
+                else if(type === "HTML Format")
+                {
+                    contentType = ClipboardType.html;
+                    break;
+                }
+                else if (type === "UnicodeText" || type === "Text" ) {
                     contentType = ClipboardType.text;
                     break;
                 }

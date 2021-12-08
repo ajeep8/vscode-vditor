@@ -59,21 +59,18 @@ export class ImageSaver {
         Command.getClipboardContentType(async (ctxType) => {
             switch (ctxType) {
                 case ClipboardType.html:
+                    {
+                        Command.pasteTextHtml(async (text) => {
+                            text = await this.pasteHtmlOrText(text);
+                            callback(text);
+                        });
+                    }
+                    break;
                 case ClipboardType.text:
                     {
                         Command.pasteTextPlain(async (text) => {
-                            if (text) {
-                                let newContent: string;
-                                //如果是单个的图片url
-                                if (/^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/i.test(text)) {
-                                    newContent = await this.pasteMDImageURL(text);
-                                }
-                                else {
-                                    //如果是文本,html
-                                    newContent = await this.handlerText(text);
-                                }
-                                callback(newContent);
-                            }
+                            text = await this.pasteHtmlOrText(text);
+                            callback(text);
                         });
                     }
                     break;
@@ -87,6 +84,21 @@ export class ImageSaver {
         });
     }
 
+
+    private async pasteHtmlOrText(text: string) {
+
+        if (text) {
+            //如果是单个的图片url
+            if (/^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/i.test(text)) {
+                text = await this.pasteMDImageURL(text);
+            }
+            else {
+                //如果是文本,html
+                text = await this.handlerText(text);
+            }
+        }
+        return text;
+    }
 
     public async pasteMD(document: vscode.TextDocument, content: string): Promise<string> {
         this.document = document;
