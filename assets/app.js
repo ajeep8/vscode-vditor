@@ -298,6 +298,7 @@
                 },
                 hljs: {
                     style: global.vditorOptions.codeTheme || 'github',
+                    lineNumber:true,
                 },
                 markdown: {
                     toc: true,
