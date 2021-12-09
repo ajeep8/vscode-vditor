@@ -34,14 +34,15 @@ export class ImageSaver {
     public document: vscode.TextDocument | undefined;
 
     public pasteText() {
-        this.pasteTextStr(vscode.window.activeTextEditor!.document, (content: string) => {
+        this.document = vscode.window.activeTextEditor!.document;
+        this.pasteTextStr((content: string) => {
             ImageSaver.writeToEditor(content);
         });
     }
 
 
-    public copyFile(document: vscode.TextDocument, file: string): string {
-        this.document = document;
+    public copyFile(file: string): string {
+
         let filename = path.basename(file);
         let pasteImgContext = PasteImageContext.create(filename, this.document!);
         if (!pasteImgContext) { return ""; }
@@ -54,9 +55,8 @@ export class ImageSaver {
     }
 
 
-    public pasteTextStr(document: vscode.TextDocument, callback: (data: string) => void) {
-        this.document = document;
-        Command.getClipboardContentType(async (ctxType) => {
+    public pasteTextStr(callback: (data: string) => void) {
+        var r = Command.getClipboardContentType(async (ctxType) => {
             switch (ctxType) {
                 case ClipboardType.html:
                     {
@@ -82,64 +82,46 @@ export class ImageSaver {
                     break;
             }
         });
+
+        if (r == true) {
+            return;
+        }
+        //vscode 的api 默认只能读取文本
+        vscode.env.clipboard.readText().then((content) => {
+            ImageSaver.writeToEditor(content);
+        })
     }
 
+    public async pasteHtmlOrText(content: string): Promise<string> {
 
-    private async pasteHtmlOrText(text: string) {
-
-        if (text) {
+        if (content) {
             //如果是单个的图片url
-            if (/^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/i.test(text)) {
-                text = await this.pasteMDImageURL(text);
+            if (/^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/i.test(content)) {
+                content = await this.pasteMDImageURL(content);
             }
             else {
-                //如果是文本,html
-                text = await this.handlerText(text);
+                //如果是文本,html则转换成md
+                if (/<[a-z][\s\S]*>/i.test(content)) {
+                    content = this.nhm.translate(content);
+                }
+                //应用替换规则
+                for (var i = 0; i < VditorConfig.rules.length; i++) {
+                    let rule = VditorConfig.rules[i];
+                    content = rule.replace(content);
+                }
+                //下载图片
+                content = await replaceAsync(content, /!\[[^\]]*\]\((.*?)\s*("(?:.*[^"])")?\s*\)/gim, async (substring: string, ...args: any[]) => {
+                    const urlParsed = url.parse(args[0]);
+                    //检查是否有protocol,如果没有则是本地图片
+                    if (urlParsed.protocol === null) {
+                        return substring;
+                    }
+                    return await this.pasteMDImageURL(args[0]);
+                });
             }
         }
-        return text;
+        return content;
     }
-
-    public async pasteMD(document: vscode.TextDocument, content: string): Promise<string> {
-        this.document = document;
-        //应用替换规则
-        for (var i = 0; i < VditorConfig.rules.length; i++) {
-            let rule = VditorConfig.rules[i];
-            content = rule.replace(content);
-        }
-        //下载图片
-        return await replaceAsync(content, /!\[[^\]]*\]\((.*?)\s*("(?:.*[^"])")?\s*\)/gim, async (substring: string, ...args: any[]) => {
-            const urlParsed = url.parse(args[0]);
-            if (urlParsed.protocol === null) {
-                return substring;
-            }
-            return await this.pasteMDImageURL(args[0]);
-        });
-    }
-
-    /**
-     * 编辑器下黏贴文本,需要借助工具才能黏贴html,否则只能黏贴文本,而文本不会含有图片
-     */
-    private async handlerText(content: string): Promise<string> {
-        //如果时html则转换成md
-        if (/<[a-z][\s\S]*>/i.test(content)) {
-            content = this.nhm.translate(content);
-        }
-        //应用替换规则
-        for (var i = 0; i < VditorConfig.rules.length; i++) {
-            let rule = VditorConfig.rules[i];
-            content = rule.replace(content);
-        }
-        //下载图片
-        return await replaceAsync(content, /!\[[^\]]*\]\((.*?)\s*("(?:.*[^"])")?\s*\)/gim, async (substring: string, ...args: any[]) => {
-            const urlParsed = url.parse(args[0]);
-            if (urlParsed.protocol === null) {
-                return substring;
-            }
-            return await this.pasteMDImageURL(args[0]);
-        });
-    }
-
 
     //将url中的图片下载到本地
     private async pasteMDImageURL(imageUrl: string): Promise<string> {

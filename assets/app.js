@@ -232,7 +232,9 @@
 
 
     //添加保存图片出发事件
-    function listenPasteImage() {
+    function listenContextMenuEvents() {
+
+        //ctrl+alt+v
         document.addEventListener('keydown', (event) => {
             const keyName = event.key;
             if (keyName === 'Control' || keyName === 'Alt') {
@@ -242,25 +244,38 @@
                 vscode.postMessage({ type: 'paste' });
             }
         }, false);
+
+
+
+        const target = document.querySelector('.vditor-content');
+        
+        //paste事件捕捉设置useCapture = true,为捕获阶段
+        target.addEventListener('paste', (event) => {
+            //@ts-ignore
+            let paste = event.clipboardData.getData("text/html")
+            //检查是否有图片,有图片再处理
+            var hasImage = false;
+            if(/<img.*?src="(.*?)"[^\>]+>/g.test(paste))
+            {
+                hasImage = true;
+            }
+            //@ts-ignore
+            if(hasImage == true)
+            {
+                vscode.postMessage({ type: 'pasteContent' ,content:paste});
+                event.preventDefault();
+                event.stopImmediatePropagation();//阻止事件在捕获阶段还是冒泡阶段。
+               // event.stopPropagation();//阻止事件在冒泡阶段。
+            }
+        }, true);
+
+        //冒泡阶段,剪切后也触发保存
+        target.addEventListener('cut', (event) => {
+            vscode.postMessage({ type: 'input', content: global.vditor.getValue() });
+        }, false);
     }
 
-    function listenPasteEvents() {
-        const targets = document.querySelectorAll('.vditor-reset');
-        targets.forEach((value) => {
-            value.addEventListener('paste', (event) => {
-                //阻止不了原来的默认事件,所以改为黏贴后触发黏贴事件,然后下载图片
-                //event.preventDefault();
-                setTimeout(function () {
-                    vscode.postMessage({ type: 'pasteMD',content:global.vditor.getValue() });
-                }, 10);
-            }, false);
-
-            value.addEventListener('cut', (event) => {
-                vscode.postMessage({ type: 'input', content: global.vditor.getValue() });
-            }, false);
-        });
-    }
-
+  
     /**
    * Render the document in the webview.
    */
@@ -333,8 +348,7 @@
                 fixCut();
                 fixLinkClick();
                 listenVditorOptions();
-                listenPasteImage();
-                listenPasteEvents();
+                listenContextMenuEvents();
                 vscode.postMessage({ type: 'ready' });
             },
             input(/** @type {string} */ value) {

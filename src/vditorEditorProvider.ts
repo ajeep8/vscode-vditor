@@ -117,8 +117,8 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 				case 'paste':
 					this.onPaste(webviewPanel, document);
 					return;
-				case 'pasteMD':
-					this.onPasteMD(document, e.content);
+				case 'pasteContent':
+					this.onPasteContent(webviewPanel,document, e.content);
 					return;
 				case 'sourceCode':
 					{
@@ -232,11 +232,11 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 
 	}
 
-
 	private onUpload(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument, files: any[]) {
 		var imageSaver = ImageSaver.getInstance();
+		imageSaver.document = document;
 		var result = files.map((f: any) => {
-			return imageSaver.copyFile(document, f);
+			return imageSaver.copyFile(f);
 		});
 		webviewPanel.webview.postMessage({
 			type: 'uploaded',
@@ -246,7 +246,8 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 
 	private onPaste(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument) {
 		var imageSaver = ImageSaver.getInstance();
-		imageSaver.pasteTextStr(document, (data) => {
+		imageSaver.document = document;
+		imageSaver.pasteTextStr((data) => {
 			webviewPanel.webview.postMessage({
 				type: 'pasted',
 				content: data,
@@ -254,14 +255,18 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		});
 	}
 
-	private async onPasteMD(document: vscode.TextDocument, content: any) {
+	private async onPasteContent(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument, content: any) {
 		if(VditorConfig.autoSaveImage === false)
 		{
 			return;
 		}
 		var imageSaver = ImageSaver.getInstance();
-		var data = await imageSaver.pasteMD(document, content);
-		this.updateTextDocument(document, data);
+		imageSaver.document = document;
+		var data = await imageSaver.pasteHtmlOrText( content);
+		webviewPanel.webview.postMessage({
+			type: 'pasted',
+			content: data,
+		});
 	}
 
 
