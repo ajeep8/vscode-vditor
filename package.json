@@ -136,14 +136,7 @@
           "command": "vscode-vditor.paste",
           "when": "editorLangId == markdown"
         }
-      ],
-      "explorer/context": [
-        {
-          "when": "resourceLangId == markdown",
-          "command": "vscode-vditor.open",
-          "group": "navigation"
-        }
-      ],
+      ], 
       "editor/title": [
         {
           "when": "resourceLangId == markdown && activeEditor == workbench.editors.files.textFileEditor",

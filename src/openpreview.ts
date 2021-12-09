@@ -11,8 +11,7 @@ export class AutoOpenPreview {
     public static markdown_preview_command_id: string = "markdown.showPreviewToSide";
 
     public static openPreview() {
-        if(VditorConfig.openMode === "none")
-        {
+        if (VditorConfig.openMode === "none") {
             return;
         }
 
@@ -44,19 +43,24 @@ export class AutoOpenPreview {
     public static active() {
         //注册打开文档后触发事件
         vscode.workspace.onDidOpenTextDocument((doc) => {
+            let editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                return;
+            }
             if (doc && doc.languageId === "markdown") {
                 AutoOpenPreview.openPreview();
             }
         });
-
-        //为已经激活的编辑器打开preview
-        //检查是否有激活的texteditor,没有的话则注册激活事件
-        if (vscode.window.activeTextEditor) {
-            AutoOpenPreview.previewFirstMarkdown();
-        } else {
-            vscode.window.onDidChangeActiveTextEditor(() => {
+        if (VditorConfig.openMode !== "none") {
+            //为已经激活的编辑器打开preview
+            //检查是否有激活的texteditor,没有的话则注册激活事件
+            if (vscode.window.activeTextEditor) {
                 AutoOpenPreview.previewFirstMarkdown();
-            });
+            } else {
+                vscode.window.onDidChangeActiveTextEditor(() => {
+                    AutoOpenPreview.previewFirstMarkdown();
+                });
+            }
         }
     }
 
@@ -66,12 +70,13 @@ export class AutoOpenPreview {
             return;
         }
         let editor = vscode.window.activeTextEditor;
-        if (editor) {
-            let doc = editor.document;
-            if (doc && doc.languageId === "markdown") {
-                AutoOpenPreview.openPreview();
-                AutoOpenPreview.alreadyOpenedFirstMarkdown = true;
-            }
+        if (!editor) {
+            return;
+        }
+        let doc = editor.document;
+        if (doc && doc.languageId === "markdown") {
+            AutoOpenPreview.openPreview();
+            AutoOpenPreview.alreadyOpenedFirstMarkdown = true;
         }
     }
 
