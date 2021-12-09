@@ -256,10 +256,6 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	}
 
 	private async onPasteContent(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument, content: any) {
-		if(VditorConfig.autoSaveImage === false)
-		{
-			return;
-		}
 		var imageSaver = ImageSaver.getInstance();
 		imageSaver.document = document;
 		var data = await imageSaver.pasteHtmlOrText( content);

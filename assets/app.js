@@ -251,16 +251,20 @@
         
         //paste事件捕捉设置useCapture = true,为捕获阶段
         target.addEventListener('paste', (event) => {
+            //如果不用自动保存图片,则不用处理,这个得在客户端处理,如果只在服务端的话,就会造成事件不能传播
+            if(global.vditorOptions.autoSaveImage === false)
+            {
+                return;
+            }
             //@ts-ignore
-            let paste = event.clipboardData.getData("text/html")
+            let paste = event.clipboardData.getData("text/html");
             //检查是否有图片,有图片再处理
             var hasImage = false;
             if(/<img.*?src="(.*?)"[^\>]+>/g.test(paste))
             {
                 hasImage = true;
             }
-            //@ts-ignore
-            if(hasImage == true)
+            if(hasImage === true)
             {
                 vscode.postMessage({ type: 'pasteContent' ,content:paste});
                 event.preventDefault();
