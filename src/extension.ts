@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 
-	context.subscriptions.push(vscode.commands.registerCommand('vscode-vditor.open', () => {
+	context.subscriptions.push(vscode.commands.registerCommand(AutoOpenPreview.vditor_preview_command_id, () => {
 		vscode.commands.executeCommand(
 			'vscode.openWith',
 			vscode.window.activeTextEditor?.document.uri,
@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
 		);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('vscode-vditor.paste', () => {
+	context.subscriptions.push(vscode.commands.registerCommand(AutoOpenPreview.vditor_paste_command_id, () => {
 		let instance = ImageSaver.getInstance();
 		instance.pasteText();
 	}));
