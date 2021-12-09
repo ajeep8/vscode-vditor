@@ -8,7 +8,7 @@
     "paste",
     "copy"
   ],
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "zhepama",
   "author": {
     "name": "zhepama",
@@ -136,7 +136,7 @@
           "command": "vscode-vditor.paste",
           "when": "editorLangId == markdown"
         }
-      ], 
+      ],
       "editor/title": [
         {
           "when": "resourceLangId == markdown && activeEditor == workbench.editors.files.textFileEditor",
