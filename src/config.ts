@@ -51,4 +51,9 @@ export class VditorConfig {
         let config = vscode.workspace.getConfiguration('Vditor');
         return config.autoSaveImage;
     }
+
+    public static get openMode(): string {
+        let config = vscode.workspace.getConfiguration('Vditor');
+        return config.openMode;
+    }
 }

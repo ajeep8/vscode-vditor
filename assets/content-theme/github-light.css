@@ -1,3 +1,22 @@
+/**
+https://github.com/sindresorhus/github-markdown-css/blob/main/github-markdown-light.css
+
+删除---------
+.markdown-body::before {
+  display: table;
+  content: "";
+}
+
+.markdown-body::after {
+  display: table;
+  clear: both;
+  content: "";
+}
+添加---------
+.vditor-ir__node--expand pre.vditor-ir__marker{
+  display:block;
+}
+*/
 .vditor-reset {
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;

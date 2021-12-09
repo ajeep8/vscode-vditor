@@ -28,6 +28,7 @@
   ],
   "icon": "assets/icon.png",
   "activationEvents": [
+    "onLanguage:markdown",
     "onCustomEditor:vscode-vdito.vdito",
     "onCommand:vscode-vditor.open",
     "onCommand:vscode-vditor.paste"
@@ -78,6 +79,16 @@
           ],
           "default": "encodeSpaceOnly",
           "description": "将路径编码为URL-encode格式. 选项: none, encodeURI, encodeSpaceOnly"
+        },
+        "Vditor.openMode": {
+          "type": "string",
+          "enum": [
+            "none",
+            "markdown_preview",
+            "vditor_beside"
+          ],
+          "default": "vditor_beside",
+          "description": "markdown 默认的打开方式"
         }
       }
     },
