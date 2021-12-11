@@ -42,10 +42,6 @@ export class AutoOpenPreview {
     public static active() {
         //注册打开文档后触发事件
         vscode.workspace.onDidOpenTextDocument((doc) => {
-            let editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                return;
-            }
             if (doc && doc.languageId === "markdown") {
                 AutoOpenPreview.openPreview();
             }

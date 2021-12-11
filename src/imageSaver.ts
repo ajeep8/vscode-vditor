@@ -83,13 +83,13 @@ export class ImageSaver {
             }
         });
 
-        if (r == true) {
+        if (r === true) {
             return;
         }
         //vscode 的api 默认只能读取文本
         vscode.env.clipboard.readText().then((content) => {
             ImageSaver.writeToEditor(content);
-        })
+        });
     }
 
     public async pasteHtmlOrText(content: string): Promise<string> {
