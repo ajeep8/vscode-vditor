@@ -29,7 +29,7 @@
   "icon": "assets/icon.png",
   "activationEvents": [
     "onLanguage:markdown",
-    "onCustomEditor:vscode-vdito.vdito",
+    "onCustomEditor:vscode-vditor.vditor",
     "onCommand:vscode-vditor.open",
     "onCommand:vscode-vditor.paste"
   ],
@@ -94,7 +94,7 @@
     },
     "customEditors": [
       {
-        "viewType": "vscode-vdito.vdito",
+        "viewType": "vscode-vditor.vditor",
         "displayName": "Vdito",
         "selector": [
           {
@@ -139,7 +139,7 @@
       ],
       "editor/title": [
         {
-          "when": "resourceLangId == markdown && activeEditor == workbench.editors.files.textFileEditor",
+          "when": "resourceLangId == markdown",
           "command": "vscode-vditor.open",
           "group": "navigation"
         }

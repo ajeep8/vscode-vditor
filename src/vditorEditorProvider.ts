@@ -14,8 +14,11 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		return providerRegistration;
 	}
 
-	public static readonly viewType = 'vscode-vdito.vdito';
+	public static readonly viewType = 'vscode-vditor.vditor';
 	public static keyVditorOptions = 'vditor.options';
+	private clientLock: boolean = false;
+	private content: string = '';
+
 	constructor(
 		private readonly context: vscode.ExtensionContext
 	) {
@@ -60,9 +63,14 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 					//没有内容改变返回
 					return;
 				}
-				if (this.saveing === true) {
+
+				const text = document.getText();
+				if (text === this.content) { return; }
+
+
+				if (this.clientLock === true) {
 					//如果是保存中,且有内容改变
-					this.saveing = false;
+					this.clientLock = false;
 					return;
 				}
 				updateWebview();
@@ -85,7 +93,11 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.type) {
 				case 'ready':
-					updateWebview();
+					{
+						this.clientLock = false;
+						this.content = document.getText();
+						updateWebview();
+					}
 					return;
 				case 'refresh':
 					updateWebview();
@@ -118,7 +130,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 					this.onPaste(webviewPanel, document);
 					return;
 				case 'pasteContent':
-					this.onPasteContent(webviewPanel,document, e.content);
+					this.onPasteContent(webviewPanel, document, e.content);
 					return;
 				case 'sourceCode':
 					{
@@ -163,7 +175,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 		options = options || {};
 		options.version = VditorConfig.vditorVersion;
 		options.autoSaveImage = VditorConfig.autoSaveImage;
-		options.themePath =  webview.asWebviewUri(vscode.Uri.joinPath(
+		options.themePath = webview.asWebviewUri(vscode.Uri.joinPath(
 			this.context.extensionUri, 'assets', 'content-theme')).toString();
 
 		// Local path to script and css for the webview
@@ -178,7 +190,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 			webview.asWebviewUri(vscode.Uri.file(document.uri.fsPath)).toString()
 		) + '/';
 
-	
+
 		return /* html */`
 			<!DOCTYPE html>
 			<html>
@@ -204,9 +216,8 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 			</html>`;
 	}
 
-	private saveing: boolean = false;
 	private onSave(document: vscode.TextDocument, content: string) {
-		this.saveing = true;
+		this.clientLock = true;
 		this.updateTextDocument(document, content);
 	}
 
@@ -258,7 +269,7 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
 	private async onPasteContent(webviewPanel: vscode.WebviewPanel, document: vscode.TextDocument, content: any) {
 		var imageSaver = ImageSaver.getInstance();
 		imageSaver.document = document;
-		var data = await imageSaver.pasteHtmlOrText( content);
+		var data = await imageSaver.pasteHtmlOrText(content);
 		webviewPanel.webview.postMessage({
 			type: 'pasted',
 			content: data,
@@ -270,9 +281,10 @@ export class VditorEditorProvider implements vscode.CustomTextEditorProvider {
  * Write out the json to a given document.
  */
 	private updateTextDocument(document: vscode.TextDocument, content: any) {
+		const text = document.getText();
+		if (text === content) { return; }
+		this.content = content;
 		const edit = new vscode.WorkspaceEdit();
-		// Just replace the entire document every time for this example extension.
-		// A more complete extension should compute minimal edits instead.
 		edit.replace(
 			document.uri,
 			new vscode.Range(0, 0, document.lineCount, 0),

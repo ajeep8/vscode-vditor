@@ -9,11 +9,7 @@ export class AutoOpenPreview {
     public static close_other_editor_command_id: string = "workbench.action.closeEditorsInOtherGroups";
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static markdown_preview_command_id: string = "markdown.showPreviewToSide";
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public static vditor_preview_command_id: string = 'vscode-vditor.open';
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public static vditor_paste_command_id: string = 'vscode-vditor.paste';
-
+ 
     public static openPreview() {
         if (VditorConfig.openMode === "none") {
             return;
@@ -30,7 +26,16 @@ export class AutoOpenPreview {
                         }
                     case "vditor_beside":
                         {
-                            vscode.commands.executeCommand(AutoOpenPreview.vditor_preview_command_id);
+                            if(!vscode.window.activeTextEditor)
+                            {
+                                return;
+                            }
+                            vscode.commands.executeCommand(
+                                'vscode.openWith',
+                                vscode.window.activeTextEditor.document.uri,
+                                VditorEditorProvider.viewType,
+                                vscode.ViewColumn.Beside,
+                            );
                             break;
                         }
                 }

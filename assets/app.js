@@ -241,35 +241,51 @@
                 return;
             }
             if (event.ctrlKey && event.altKey && keyName === "v") {
-                vscode.postMessage({ type: 'paste' });
+                navigator.clipboard.read().then(items => {
+                    for (let i = 0; i < items.length; i++) {
+                        var types = items[i].types; 
+                        if(types.length === 1 && types[0] === "text/plain")
+                        {
+                            vscode.postMessage({ type: 'paste'});
+                            continue;
+                        }
+                        for (let j = 0; j < types.length; j++) {
+                            if (types[j] === "text/html") {
+                                items[i].getType("text/html").then((blob) => {
+                                    blob.text().then(html => { 
+                                        //检查是否有图片,有图片再处理
+                                        if (/<img[^>]+src="([^">]+)/g.test(html)) {
+                                            vscode.postMessage({ type: 'pasteContent', content: html });
+                                        }
+                                    });
+                                });
+                            }  
+                        }
+                    }
+                }); 
             }
         }, false);
 
 
-
         const target = document.querySelector('.vditor-content');
-        
         //paste事件捕捉设置useCapture = true,为捕获阶段
         target.addEventListener('paste', (event) => {
             //如果不用自动保存图片,则不用处理,这个得在客户端处理,如果只在服务端的话,就会造成事件不能传播
-            if(global.vditorOptions.autoSaveImage === false)
-            {
+            if (global.vditorOptions.autoSaveImage === false) {
                 return;
             }
             //@ts-ignore
             let paste = event.clipboardData.getData("text/html");
             //检查是否有图片,有图片再处理
             var hasImage = false;
-            if(/<img.*?src="(.*?)"[^\>]+>/g.test(paste))
-            {
+            if (/<img.*?src="(.*?)"[^\>]+>/g.test(paste)) {
                 hasImage = true;
             }
-            if(hasImage === true)
-            {
-                vscode.postMessage({ type: 'pasteContent' ,content:paste});
+            if (hasImage === true) {
+                vscode.postMessage({ type: 'pasteContent', content: paste });
                 event.preventDefault();
                 event.stopImmediatePropagation();//阻止事件在捕获阶段还是冒泡阶段。
-               // event.stopPropagation();//阻止事件在冒泡阶段。
+                // event.stopPropagation();//阻止事件在冒泡阶段。
             }
         }, true);
 
@@ -279,7 +295,7 @@
         }, false);
     }
 
-  
+
     /**
    * Render the document in the webview.
    */
@@ -294,13 +310,22 @@
         global.vditor.insertValue(file);
     }
 
-    var textEditTimer;
+    function debounce(fn, wait = 1) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn.call(this, ...args), wait);
+        };
+    }
+
+
+
     const initVditor = (language) => {
         // @ts-ignore
         global.vditor = new Vditor('vditor', {
             lang: language,
             theme: global.vditorOptions.theme || 'classic',
-            icon:'material',
+            icon: 'material',
             mode: global.vditorOptions.editMode || 'ir',
             toolbar: toolbar,
             toolbarConfig: {
@@ -317,14 +342,14 @@
                         "dark": "Dark",
                         "wechat": "WeChat",
                         "ant-design": "Ant",
-                        "github-dark":"github-dark",
-                        "github-light":"github-light"
+                        "github-dark": "github-dark",
+                        "github-light": "github-light"
                     },
-                    path: global.vditorOptions.themePath||`https://cdn.jsdelivr.net/npm/vditor${global.vditorOptions.version}/dist/css/content-theme`
+                    path: global.vditorOptions.themePath || `https://cdn.jsdelivr.net/npm/vditor${global.vditorOptions.version}/dist/css/content-theme`
                 },
                 hljs: {
                     style: global.vditorOptions.codeTheme || 'github',
-                    lineNumber:false,
+                    lineNumber: false,
                 },
                 markdown: {
                     toc: true,
@@ -355,12 +380,10 @@
                 listenContextMenuEvents();
                 vscode.postMessage({ type: 'ready' });
             },
-            input(/** @type {string} */ value) {
-                //避免更新过较频繁或更新代价较高
-                textEditTimer && clearTimeout(textEditTimer);
-                textEditTimer = setTimeout(() => {
-                    vscode.postMessage({ type: 'input', content: value });
-                }, 300);
+            input(/** @type {string} */ text) {
+                debounce(() => {
+                    vscode.postMessage({ type: 'input', content: text });
+                }, 200)();
             },
             focus(/** @type {string} */ value) {
                 // vscode.postMessage({ type: 'focus', content: value });
@@ -382,13 +405,13 @@
 
     //移除vscode的特性样式
     var htmlElement = document.querySelector("html");
-    htmlElement.removeAttribute("style"); 
+    htmlElement.removeAttribute("style");
 
     global.setLang = (language) => {
         global.vditor.destroy();
         initVditor(language);
     };
-   
+
     // Handle messages sent from the extension to the webview
     global.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
