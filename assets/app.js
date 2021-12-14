@@ -336,7 +336,7 @@
             },
             preview: {
                 theme: {
-                    current: global.vditorOptions.contentTheme || 'light',
+                    current: global.vditorOptions.contentTheme || 'light-autonum',
                     list: {
                         "light-autonum": "Light-AutoNumber",
                         "light": "Light",
