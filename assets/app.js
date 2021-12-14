@@ -338,6 +338,7 @@
                 theme: {
                     current: global.vditorOptions.contentTheme || 'light',
                     list: {
+                        "light-autonum": "Light-AutoNumber",
                         "light": "Light",
                         "dark": "Dark",
                         "wechat": "WeChat",
