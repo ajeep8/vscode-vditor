@@ -1,3 +1,5 @@
+fork from https://e.coding.net/godgodgame/tools/vscode-vditor.git
+
 # vscode-vditor
 
 基于[vditor](https://github.com/Vanessa219/vditor)开发的一个markdown编辑器插件
